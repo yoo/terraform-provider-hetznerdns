@@ -309,11 +309,25 @@ func (c *Client) RecordExistsByName(zoneID string, name string) (bool, error) {
 		return false, fmt.Errorf("Error getting record %s: %s", name, err)
 	}
 
-	if resp.StatusCode == http.StatusNotFound {
-		return false, nil
-	}
 	if resp.StatusCode == http.StatusOK {
-		return true, nil
+		var response *RecordsResponse
+		err = readAndParseJSONBody(resp, &response)
+		if err != nil {
+			return false, fmt.Errorf("Error Reading json response :%s", err)
+		}
+		if len(response.Records) > 0 {
+			if name == "@" {
+				for _, record := range response.Records {
+					if record.Type == "A" || record.Type == "CNAME" {
+						return true, nil
+					}
+				}
+			} else {
+				return true, nil
+			}
+		}
+		return false, nil
+
 	}
 
 	return false, fmt.Errorf("Error getting Record. HTTP status %d unhandled", resp.StatusCode)

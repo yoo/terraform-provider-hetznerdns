@@ -78,7 +78,6 @@ func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface
 		Type:   recordType.(string),
 		Value:  value.(string),
 	}
-
 	recordExists, err := client.RecordExistsByName(opts.ZoneID, opts.Name)
 	if err != nil {
 		log.Printf("[ERROR] Checking if resource record exists failed: %s", err)
@@ -97,7 +96,6 @@ func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface
 		nonEmptyTTL := tTL.(int)
 		opts.TTL = &nonEmptyTTL
 	}
-
 	record, err := client.CreateRecord(opts)
 	if err != nil {
 		log.Printf("[ERROR] Error creating DNS record %s: %s", opts.Name, err)

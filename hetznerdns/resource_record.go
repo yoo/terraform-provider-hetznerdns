@@ -78,7 +78,7 @@ func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface
 		Type:   recordType.(string),
 		Value:  value.(string),
 	}
-	recordExists, err := client.RecordExistsByName(opts.ZoneID, opts.Name)
+	recordExists, err := client.RecordExistsByName(opts.ZoneID, opts.Name, opts.Type)
 	if err != nil {
 		log.Printf("[ERROR] Checking if resource record exists failed: %s", err)
 		d.SetId("")

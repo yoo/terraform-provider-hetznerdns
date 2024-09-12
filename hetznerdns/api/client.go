@@ -303,17 +303,35 @@ func (c *Client) CreateZone(opts CreateZoneOpts) (*Zone, error) {
 }
 
 // RecordExistsByName checks if a DNS Record with a given name exists in a given zone
-func (c *Client) RecordExistsByName(zoneID string, name string) (bool, error) {
+func (c *Client) RecordExistsByName(zoneID string, name string, typerec string) (bool, error) {
 	resp, err := c.doGetRequest(fmt.Sprintf("https://dns.hetzner.com/api/v1/records?zone_id=%s&name=%s", zoneID, name))
 	if err != nil {
 		return false, fmt.Errorf("Error getting record %s: %s", name, err)
 	}
 
-	if resp.StatusCode == http.StatusNotFound {
-		return false, nil
-	}
 	if resp.StatusCode == http.StatusOK {
-		return true, nil
+		var response *RecordsResponse
+		err = readAndParseJSONBody(resp, &response)
+		if err != nil {
+			return false, fmt.Errorf("Error Reading json response :%s", err)
+		}
+		if len(response.Records) > 0 {
+			if name == "@"{
+        if typerec== "A" || typerec == "CNAME"{
+				  for _, record := range response.Records {
+					  if record.Type == "A" || record.Type == "CNAME" {
+						  return true, nil
+					  }
+				  }
+        }else{
+          return false, nil
+        }
+			} else {
+				return true, nil
+			}
+		}
+		return false, nil
+
 	}
 
 	return false, fmt.Errorf("Error getting Record. HTTP status %d unhandled", resp.StatusCode)
